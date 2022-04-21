@@ -161,3 +161,11 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${USERDIR}/docker/wekan/data:/data:rw
+
+#=========================NETWORKS=========================
+#               This is a list of networks
+#==========================================================
+
+networks:
+  wekan-tier:
+    driver: bridge
