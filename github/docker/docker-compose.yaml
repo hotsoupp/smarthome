@@ -1,0 +1,108 @@
+version: "3.8" 
+
+services:
+ portainer:
+  image: portainer/portainer-ee:latest
+  container_name: portainer
+  restart: always
+  volumes:
+   - /var/run/docker.sock:/var/run/docker.sock
+   - ${USERDIR}/docker/portainer/data:/data
+  ports:
+   - 8000:8000
+   - 9443:9443
+  environment:
+   - TZ=${TZ}
+#========================DB APPS=======================
+#                  This is a list of apps
+#                    Used for Databases
+#==========================================================
+
+
+#PHP MYADMIN 
+ phpmyadmin:
+  hostname: phpmyadmin
+  container_name: phpmyadmin
+  image: phpmyadmin/phpmyadmin
+  restart: always
+  links:
+   - mariadb:db
+  ports:
+   - 8081:80
+  environment:
+   - PMA_HOST=mariadb
+   - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+#MARIA DB
+ mariadb:
+  image: linuxserver/mariadb
+  container_name: mariadb
+  hostname: mariadb
+  volumes:
+   - ${USERDIR}/docker/mariadb:/config
+  ports:
+   - target: 3306
+     published: 3306
+     protocol: tcp
+     mode: host  
+  restart: always
+  environment:
+   - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+   - PUID=${PUID}
+   - PGID=${PGID}
+   - TZ=${TZ}
+
+#========================WATCH TOWER=======================
+#                  This is a list of apps
+#                  Used for Auto Updating
+#==========================================================
+
+
+ watchtower:
+  container_name: watchtower
+  restart: always
+  image: v2tec/watchtower
+  volumes:
+   - /var/run/docker.sock:/var/run/docker.sock
+  command: --schedule "0 0 4 * * *" --cleanup
+
+
+
+#========================MEDIA APPS========================
+#                  This is a list of apps
+#                 Used for Media Management
+#==========================================================
+
+#Tautulli
+ tautulli:
+  container_name: tautulli
+  restart: always
+  image: linuxserver/tautulli
+  volumes:
+   - ${USERDIR}/docker/tautulli/config:/config
+   - ${USERDIR}/docker/tautulli/logs:/logs:ro
+   - ${USERDIR}/docker/shared:/shared
+  ports:
+   - 8181:8181
+  environment:
+   - PUID=${PUID}
+   - PGID=${PGID}
+   - TZ=${TZ}  
+
+#========================MEDIA APPS========================
+#                  This is a list of apps
+#                  Used for useful things
+#==========================================================
+
+#Vaultwarden
+ vaultwarden:
+  image: vaultwarden/server:latest
+  container_name: vaultwarden
+  volumes:
+   - ${USERDIR}/docker/vaultwarden/data:/data
+  ports:
+   - 8030:80
+  restart: unless-stopped
+  environment:
+   - PUID=${PUID}
+   - PGID=${PGID}
+   - TZ=${TZ}
