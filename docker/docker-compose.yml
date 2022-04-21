@@ -104,3 +104,60 @@ services:
    - PGID=${PGID}
    - TZ=${TZ}
 
+#Wekan
+  wekandb:
+    image: mongo:4.4
+    container_name: wekan-db
+    restart: always
+    command: mongod --logpath /dev/null --oplogSize 128 --quiet
+    networks:
+      - wekan-tier
+    expose:
+      - 27017
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${USERDIR}/docker/wekan/wekan-db/data/db:/data/db
+      - ${USERDIR}/docker/wekan/wekan-db/dump:/dump
+
+  wekan:
+    image: quay.io/wekan/wekan:v6.18
+    container_name: wekan-app
+    restart: always
+    networks:
+      - wekan-tier
+    ports:
+      - 88:8080
+    environment:
+      - WRITABLE_PATH=/data
+      - MONGO_URL=mongodb://wekandb:27017/wekan
+      - ROOT_URL=https://plan.tencate.io  #   <=== using only at same laptop/desktop where Wekan is installed
+      - MAIL_URL=smtp://mail.privateemail.com>:587/?ignoreTLS=true&tls={rejectUnauthorized:false}
+      - MAIL_FROM=Wekan Notifications
+      - WITH_API=true
+      - RICHER_CARD_COMMENT_EDITOR=false
+      - CARD_OPENED_WEBHOOK_ENABLED=false
+      - BIGEVENTS_PATTERN=NONE
+      - BROWSER_POLICY_ENABLED=true
+# ==== OAUTH2 DOORKEEPER ====
+      # https://github.com/wekan/wekan/issues/1874
+      # https://github.com/wekan/wekan/wiki/OAuth2
+      # Enable the OAuth2 connection
+      - OAUTH2_ENABLED=true
+      - OAUTH2_LOGIN_STYLE=redirect
+      - OAUTH2_CLIENT_ID=eab5ef5729377153ccf8c267bad198bf17a87fa0
+      - OAUTH2_SECRET=8cc354e84516d23fdfcceec6fd8cbb59130b23f22d603094fad5817308df088fb818ec4b063821688458b601606a3cdd0c4ed080cdf33ef4115abb>      - OAUTH2_SERVER_URL=https://sso.tencate.io
+      - OAUTH2_AUTH_ENDPOINT=/application/o/authorize/
+      - OAUTH2_USERINFO_ENDPOINT=/application/o/userinfo/
+      - OAUTH2_TOKEN_ENDPOINT=/application/o/token/
+      - OAUTH2_ID_TOKEN_WHITELIST_FIELDS=""
+      - OAUTH2_REQUEST_PERMISSIONS=openid profile email
+      - OAUTH2_ID_MAP=sub
+      - OAUTH2_USERNAME_MAP=preferred_username
+      - OAUTH2_FULLNAME_MAP=given_name
+      - OAUTH2_EMAIL_MAP=email
+    depends_on:
+      - wekandb
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${USERDIR}/docker/wekan/data:/data:rw
