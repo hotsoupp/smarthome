@@ -1,0 +1,95 @@
+version: "3.6"
+services:
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=TZ=${TZ}
+    volumes:
+      - ${DATADIR}/radarr/config:/config
+      - ${MOVIES}:/movies
+      - ${DL}/complete:/download
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:develop
+    container_name: sonarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID} 
+      - TZ=TZ=${TZ}
+    volumes:
+      - ${DATADIR}/sonarr/config:/config
+      - /mnt/tv:/tv 
+      - /mnt/anime:/anime
+      - ${DL}/complete:/download
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:develop
+    container_name: prowlarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DATADIR}/prowlarr/config:/config
+    ports:
+      - 9696:9696
+    restart: unless-stopped
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DATADIR}/bazarr/config:/config
+      - ${MOVIES}:/movies
+      - ${TV}:/tv
+    ports:
+      - 6767:6767
+    restart: unless-stopped
+  overseerr:
+    image: lscr.io/linuxserver/overseerr
+    container_name: overseerr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DATADIR}/overseerr/config:/config
+    ports:
+      - 5055:5055
+    restart: unless-stopped
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DATADIR}/sabnzbd/config:/config
+      - ${DL}/complete:/download #optional
+      - ${DL}/incomplete/incomplete-downloads
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+  tautulli:
+    image: lscr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DATADIR}/tautulli/config:/config
+    ports:
+      - 8181:8181
+    restart: unless-stopped
